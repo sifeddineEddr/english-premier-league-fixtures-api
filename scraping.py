@@ -1,8 +1,7 @@
-import requests
-from bs4 import BeautifulSoup
+from selenium import webdriver
 
-response = requests.get("https://www.premierleague.com/news/3537201")
+driver = webdriver.Chrome()
 
-soup = BeautifulSoup(response.text, 'html.parser')
+driver.get("https://fantasy.premierleague.com/fixtures")
 
-print(soup)
+driver.quit()
