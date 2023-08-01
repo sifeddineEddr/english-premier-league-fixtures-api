@@ -14,7 +14,8 @@ def getTeamFixtures(team):
     team_fixtures = data.loc[data["Team"] == team.capitalize()]
     gameweeks_dict = {
         col: team_fixtures[col].iloc[0]  # Create a dictionary with gameweek as key and fixture as value
-        for col in team_fixtures.columns if col != "Team"  # Exclude the 'Team' column
+        for col in team_fixtures.columns
+        if col != "Team"  # Exclude the 'Team' column
     }
     team_dict = {
         "Team": team_fixtures["Team"].iloc[0],  # Get the team name from the first row
@@ -24,6 +25,7 @@ def getTeamFixtures(team):
 
 
 # print(getTeamFixtures("arsenal"))
+
 
 def getAllGameweeks():
     all_gameweeks = {}
@@ -49,4 +51,15 @@ def getAllGameweeks():
     return all_gameweeks
 
 
-print(getAllGameweeks())
+# print(getAllGameweeks())
+
+
+def getGameweekFixtures(gw):
+    gameweek_column = f"GW{gw}"
+    if gameweek_column in getAllGameweeks():
+        return {gameweek_column: getAllGameweeks()[gameweek_column]}
+    else:
+        return None
+
+
+print(getGameweekFixtures(2))
