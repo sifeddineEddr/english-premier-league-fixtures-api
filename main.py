@@ -8,14 +8,14 @@ app = Flask(__name__)
 
 def getAllGameweeks():
     all_gameweeks = {}
-    already_printed = set()
 
     for i in range(1, 39):
+        already_printed = set()
         gameweek_column = f"GW{i}"
         gameweeks_data = zip(data["Team"], data[gameweek_column])
         fixtures = []
 
-        # To check if the fixture is already on the dictionnary
+        # To check if the fixture is already on the dictionary
         for team, fixture in gameweeks_data:
             fixture_pair_1 = f"{team} vs {fixture}"
             fixture_pair_2 = f"{fixture} vs {team}"
@@ -33,7 +33,13 @@ def getAllGameweeks():
 
 @app.route("/gameweeks")
 def gameweeks():
-    return jsonify(getAllGameweeks())
+    all_gameweeks = getAllGameweeks()
+    response = []
+
+    for gameweek, fixtures in all_gameweeks.items():
+        response.append({gameweek: fixtures})
+
+    return jsonify(response)
 
 
 @app.route("/gameweeks/<int:gw>")
@@ -49,21 +55,16 @@ def getGameweekFixtures(gw):
 
 @app.route("/gameweeks/<string:team>")
 def getTeamFixtures(team):
-    team = request.args.get(
-        "team", ""
-    ).strip()  # Get the team name from the 'team' query parameter (url: "http://127.0.0.1:5000/gameweeks?team=arsenal")
+    team = request.args.get("team", "").strip()  # Get the team name from the 'team' query parameter (url: "http://127.0.0.1:5000/gameweeks?team=arsenal")
     if not team:
-        return (
-            jsonify({"error": "Team not specified"}),
-            400,
-        )  # Return 400 status code for missing team name
+        return (jsonify({"error": "Team not specified"}), 400)
 
     team_fixtures = data.loc[data["Team"] == team.capitalize()]
     if not team_fixtures.empty:
         gameweeks_dict = {
             col: team_fixtures[col].iloc[0]  # Create a dictionary with gameweek as key and fixture as value
             for col in team_fixtures.columns
-            if col != "Team"  # Exclude the 'Team' column
+            if col != "Team"  # Exclude the Team column
         }
         team_dict = {
             "Team": team_fixtures["Team"].iloc[0],  # Get the team name from the first row
