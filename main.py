@@ -1,9 +1,10 @@
 import pandas as pd
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 data = pd.read_csv("FPL_Schedule2324.csv")
 
 app = Flask(__name__)
+
 
 def getAllGameweeks():
     all_gameweeks = {}
@@ -29,8 +30,9 @@ def getAllGameweeks():
 
     return all_gameweeks
 
+
 @app.route("/gameweeks")
-def gameweeks():    
+def gameweeks():
     return jsonify(getAllGameweeks())
 
 
@@ -42,22 +44,34 @@ def getGameweekFixtures(gw):
         response = {gameweek_column: all_gameweeks[gameweek_column]}
         return jsonify(response)
     else:
-        return "Resource not found"
+        return jsonify({"error": "Resource not found"}), 404
 
 
 @app.route("/gameweeks/<string:team>")
 def getTeamFixtures(team):
+    team = request.args.get(
+        "team", ""
+    ).strip()  # Get the team name from the 'team' query parameter (url: "http://127.0.0.1:5000/gameweeks?team=arsenal")
+    if not team:
+        return (
+            jsonify({"error": "Team not specified"}),
+            400,
+        )  # Return 400 status code for missing team name
+
     team_fixtures = data.loc[data["Team"] == team.capitalize()]
-    gameweeks_dict = {
-        col: team_fixtures[col].iloc[0]  # Create a dictionary with gameweek as key and fixture as value
-        for col in team_fixtures.columns
-        if col != "Team"  # Exclude the 'Team' column
-    }
-    team_dict = {
-        "Team": team_fixtures["Team"].iloc[0],  # Get the team name from the first row
-        "Gameweeks": gameweeks_dict,
-    }
-    return jsonify(team_dict)
+    if not team_fixtures.empty:
+        gameweeks_dict = {
+            col: team_fixtures[col].iloc[0]  # Create a dictionary with gameweek as key and fixture as value
+            for col in team_fixtures.columns
+            if col != "Team"  # Exclude the 'Team' column
+        }
+        team_dict = {
+            "Team": team_fixtures["Team"].iloc[0],  # Get the team name from the first row
+            "Gameweeks": gameweeks_dict,
+        }
+        return jsonify(team_dict)
+    else:
+        return jsonify({"error": "Team not found"}), 404
 
 
 if __name__ == "__main__":
