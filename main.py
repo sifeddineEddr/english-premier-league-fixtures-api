@@ -1,31 +1,9 @@
 import pandas as pd
+from flask import Flask, jsonify
 
 data = pd.read_csv("FPL_Schedule2324.csv")
 
-# # Getting each row data
-# for index, row in data.iterrows():
-#     print(row)
-
-# Filtering
-# print(data.loc[data['Team'] == 'Arsenal'])
-
-
-def getTeamFixtures(team):
-    team_fixtures = data.loc[data["Team"] == team.capitalize()]
-    gameweeks_dict = {
-        col: team_fixtures[col].iloc[0]  # Create a dictionary with gameweek as key and fixture as value
-        for col in team_fixtures.columns
-        if col != "Team"  # Exclude the 'Team' column
-    }
-    team_dict = {
-        "Team": team_fixtures["Team"].iloc[0],  # Get the team name from the first row
-        "Gameweeks": gameweeks_dict,
-    }
-    return team_dict
-
-
-# print(getTeamFixtures("arsenal"))
-
+app = Flask(__name__)
 
 def getAllGameweeks():
     all_gameweeks = {}
@@ -45,21 +23,42 @@ def getAllGameweeks():
                 and fixture_pair_2 not in already_printed
             ):
                 fixtures.append(fixture_pair_1)
+                already_printed.add(fixture_pair_1)
 
         all_gameweeks[gameweek_column] = fixtures
 
     return all_gameweeks
 
+@app.route("/gameweeks")
+def gameweeks():    
+    return jsonify(getAllGameweeks())
 
-# print(getAllGameweeks())
 
-
+@app.route("/gameweeks/<int:gw>")
 def getGameweekFixtures(gw):
+    all_gameweeks = getAllGameweeks()
     gameweek_column = f"GW{gw}"
-    if gameweek_column in getAllGameweeks():
-        return {gameweek_column: getAllGameweeks()[gameweek_column]}
+    if gameweek_column in all_gameweeks:
+        response = {gameweek_column: all_gameweeks[gameweek_column]}
+        return jsonify(response)
     else:
-        return None
+        return "Resource not found"
 
 
-print(getGameweekFixtures(2))
+@app.route("/gameweeks/<string:team>")
+def getTeamFixtures(team):
+    team_fixtures = data.loc[data["Team"] == team.capitalize()]
+    gameweeks_dict = {
+        col: team_fixtures[col].iloc[0]  # Create a dictionary with gameweek as key and fixture as value
+        for col in team_fixtures.columns
+        if col != "Team"  # Exclude the 'Team' column
+    }
+    team_dict = {
+        "Team": team_fixtures["Team"].iloc[0],  # Get the team name from the first row
+        "Gameweeks": gameweeks_dict,
+    }
+    return jsonify(team_dict)
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
