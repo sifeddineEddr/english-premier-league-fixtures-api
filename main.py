@@ -1,12 +1,11 @@
 import pandas as pd
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
 
 data = pd.read_csv("FPL_Schedule2324.csv")
 
 app = Flask(__name__)
 
-
-def getAllGameweeks():
+def get_all_gameweeks():
     all_gameweeks = {}
 
     for i in range(1, 39):
@@ -33,7 +32,7 @@ def getAllGameweeks():
 
 @app.route("/gameweeks")
 def gameweeks():
-    all_gameweeks = getAllGameweeks()
+    all_gameweeks = get_all_gameweeks()
     response = []
 
     for gameweek, fixtures in all_gameweeks.items():
@@ -43,8 +42,8 @@ def gameweeks():
 
 
 @app.route("/gameweeks/<int:gw>")
-def getGameweekFixtures(gw):
-    all_gameweeks = getAllGameweeks()
+def get_gameweek_fixtures(gw):
+    all_gameweeks = get_all_gameweeks()
     gameweek_column = f"GW{gw}"
     if gameweek_column in all_gameweeks:
         response = {gameweek_column: all_gameweeks[gameweek_column]}
@@ -55,12 +54,12 @@ def getGameweekFixtures(gw):
 
 @app.route("/gameweeks/<string:team>")
 def getTeamFixtures(team):
-    all_gameweeks = getAllGameweeks()
+    all_gameweeks = get_all_gameweeks()
     team_fixtures = {}
 
     for gameweek, game_list in all_gameweeks.items():
         for game in game_list:
-            if ( team.lower() in game.lower() ):  # I had to use game.lower() for the teams having a white space on their name
+            if (team.lower() in game.lower()):  # I had to use game.lower() for the teams having a white space on their name
                 team_fixtures[gameweek] = game
 
     sorted_team_fixtures = {
@@ -71,6 +70,7 @@ def getTeamFixtures(team):
     response = [{gw: fixture} for gw, fixture in sorted_team_fixtures.items()]
 
     return jsonify(response)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
