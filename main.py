@@ -55,25 +55,22 @@ def getGameweekFixtures(gw):
 
 @app.route("/gameweeks/<string:team>")
 def getTeamFixtures(team):
-    team = request.args.get("team", "").strip()  # Get the team name from the 'team' query parameter (url: "http://127.0.0.1:5000/gameweeks?team=arsenal")
-    if not team:
-        return (jsonify({"error": "Team not specified"}), 400)
+    all_gameweeks = getAllGameweeks()
+    team_fixtures = {}
 
-    team_fixtures = data.loc[data["Team"] == team.capitalize()]
-    if not team_fixtures.empty:
-        gameweeks_dict = {
-            col: team_fixtures[col].iloc[0]  # Create a dictionary with gameweek as key and fixture as value
-            for col in team_fixtures.columns
-            if col != "Team"  # Exclude the Team column
-        }
-        team_dict = {
-            "Team": team_fixtures["Team"].iloc[0],  # Get the team name from the first row
-            "Gameweeks": gameweeks_dict,
-        }
-        return jsonify(team_dict)
-    else:
-        return jsonify({"error": "Team not found"}), 404
+    for gameweek, game_list in all_gameweeks.items():
+        for game in game_list:
+            if ( team.lower() in game.lower() ):  # I had to use game.lower() for the teams having a white space on their name
+                team_fixtures[gameweek] = game
 
+    sorted_team_fixtures = {
+        key: value
+        for key, value in sorted(team_fixtures.items(), key=lambda x: int(x[0][2:]))
+    }
+
+    response = [{gw: fixture} for gw, fixture in sorted_team_fixtures.items()]
+
+    return jsonify(response)
 
 if __name__ == "__main__":
     app.run(debug=True)
