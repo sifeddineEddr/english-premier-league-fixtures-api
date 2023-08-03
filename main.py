@@ -18,10 +18,7 @@ def get_all_gameweeks():
         for team, fixture in gameweeks_data:
             fixture_pair_1 = f"{team} vs {fixture}"
             fixture_pair_2 = f"{fixture} vs {team}"
-            if (
-                fixture_pair_1 not in already_printed
-                and fixture_pair_2 not in already_printed
-            ):
+            if ( fixture_pair_1 not in already_printed and fixture_pair_2 not in already_printed ):
                 fixtures.append(fixture_pair_1)
                 already_printed.add(fixture_pair_1)
 
@@ -59,7 +56,7 @@ def getTeamFixtures(team):
 
     for gameweek, game_list in all_gameweeks.items():
         for game in game_list:
-            if (team.lower() in game.lower()):  # I had to use game.lower() for the teams having a white space on their name
+            if (team.lower() in game.lower()):
                 team_fixtures[gameweek] = game
 
     sorted_team_fixtures = {

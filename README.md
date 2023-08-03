@@ -26,7 +26,7 @@ Make a **`GET`** request to the base URL to access all gameweeks and their fixtu
 To fetch fixtures for a specific gameweek, replace **`{gameweek_number}`** with the desired gameweek's number in the URI:
     
     ```jsx
-    https://epl-fixtures-api.sifeddineeddr.repl.co/gameweeks/**{gameweek_number}**
+    https://epl-fixtures-api.sifeddineeddr.repl.co/gameweeks/{gameweek_number}
     ```
     
 3. **Retrieve Team-Specific Fixtures**:
